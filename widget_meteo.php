@@ -1,149 +1,214 @@
 <?php
-
-/**
- * @package widget_meteo
- * @version 0.1.1
- */
 /*
-Plugin Name: La Meteo qui sert pas du tout
-Plugin URI: http://wordpress.org/plugins/lameteopd/
-Description: Ceci est un plugin meteo pour ceux qui cherchent à voir l'invisible frère
-Author: Wndrfla
-Version: 0.1.1
-Author URI: http://wndrfla.tg/
+Plugin Name: Plugin Météo
+Plugin URI: https://lamanu.fr/
+Description: Ceci est mon premier plugin
+Author: Nicolas Personne
+Version: 1.0
+Author URI: http://lamanu.fr/
 */
-
-class PluginMeteo {
-	private $plugin_meteo_options;
-
-	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'plugin_meteo_add_plugin_page' ) );
-		add_action( 'admin_init', array( $this, 'plugin_meteo_page_init' ) );
+if($pagenow == 'admin.php'){
+function style()
+	{
+		wp_enqueue_style('style_plug', plugin_dir_url( __FILE__ ).'style.css');
 	}
-
-	public function plugin_meteo_add_plugin_page() {
-		add_plugins_page(
-			'Plugin Meteo', // page_title
-			'Plugin Meteo', // menu_title
-			'manage_options', // capability
-			'plugin-meteo', // menu_slug
-			array( $this, 'plugin_meteo_create_admin_page' ) // function
-		);
-	}
-
-	public function plugin_meteo_create_admin_page() {
-		$this->plugin_meteo_options = get_option( 'plugin_meteo_option_name' ); ?>
-
-		<div class="wrap">
-			<h2>Plugin Meteo</h2>
-			<p>Veuillez entrer votre clé api, l'ID de la ville ainsi que le widget désiré.</p>
-			<?php settings_errors(); ?>
-
-			<form method="post" action="options.php">
-				<?php
-					settings_fields( 'plugin_meteo_option_group' );
-					do_settings_sections( 'plugin-meteo-admin' );
-					submit_button();
-				?>
-			</form>
-		</div>
-	<?php }
-
-	public function plugin_meteo_page_init() {
-		register_setting(
-			'plugin_meteo_option_group', // option_group
-			'plugin_meteo_option_name', // option_name
-			array( $this, 'plugin_meteo_sanitize' ) // sanitize_callback
-		);
-
-		add_settings_section(
-			'plugin_meteo_setting_section', // id
-			'Settings', // title
-			array( $this, 'plugin_meteo_section_info' ), // callback
-			'plugin-meteo-admin' // page
-		);
-
-		add_settings_field(
-			'api_key_0', // id
-			'api-key', // title
-			array( $this, 'api_key_0_callback' ), // callback
-			'plugin-meteo-admin', // page
-			'plugin_meteo_setting_section' // section
-		);
-
-		add_settings_field(
-			'city_id_1', // id
-			'city-id', // title
-			array( $this, 'city_id_1_callback' ), // callback
-			'plugin-meteo-admin', // page
-			'plugin_meteo_setting_section' // section
-		);
-
-		add_settings_field(
-			'widget_type_2', // id
-			'widget-type', // title
-			array( $this, 'widget_type_2_callback' ), // callback
-			'plugin-meteo-admin', // page
-			'plugin_meteo_setting_section' // section
-		);
-	}
-
-	public function plugin_meteo_sanitize($input) {
-		$sanitary_values = array();
-		if ( isset( $input['api_key_0'] ) ) {
-			$sanitary_values['api_key_0'] = sanitize_text_field( $input['api_key_0'] );
-		}
-
-		if ( isset( $input['city_id_1'] ) ) {
-			$sanitary_values['city_id_1'] = sanitize_text_field( $input['city_id_1'] );
-		}
-
-		if ( isset( $input['widget_type_2'] ) ) {
-			$sanitary_values['widget_type_2'] = sanitize_text_field( $input['widget_type_2'] );
-		}
-
-		return $sanitary_values;
-	}
-
-	public function plugin_meteo_section_info() {
-		
-	}
-
-	public function api_key_0_callback() {
-		printf(
-			'<input class="regular-text" type="text" name="plugin_meteo_option_name[api_key_0]" id="api_key_0" value="%s">',
-			isset( $this->plugin_meteo_options['api_key_0'] ) ? esc_attr( $this->plugin_meteo_options['api_key_0']) : ''
-		);
-	}
-
-	public function city_id_1_callback() {
-		printf(
-			'<input class="regular-text" type="text" name="plugin_meteo_option_name[city_id_1]" id="city_id_1" value="%s">',
-			isset( $this->plugin_meteo_options['city_id_1'] ) ? esc_attr( $this->plugin_meteo_options['city_id_1']) : ''
-		);
-	}
-
-	public function widget_type_2_callback() {
-		printf(
-			'<input class="regular-text" type="text" name="plugin_meteo_option_name[widget_type_2]" id="widget_type_2" value="%s">',
-			isset( $this->plugin_meteo_options['widget_type_2'] ) ? esc_attr( $this->plugin_meteo_options['widget_type_2']) : ''
-		);
-	}
-
+	add_action('admin_enqueue_scripts', 'style');
+}else{
+		remove_action('admin_enqueue_scripts', 'style');
 }
-if ( is_admin() )
-    $plugin_meteo = new PluginMeteo();
+//Cette fonction permet d'afficher le menu sur la partie gauche du backoffice Wordpress
+//string $page_title, string $menu_title, string $capability, string $menu_slug, callable $function = '', string $icon_url = '', int $position = null 
+function my_admin_menu()
+{
+	add_menu_page('Widget Météo', 'Widget Météo', 'manage_options', 'meteo/form.php', 'form', 'dashicons-tickets', 6);
+}
+add_action('admin_menu', 'my_admin_menu');
 
- 
-//   Accès aux valeurs:
-  $plugin_meteo_options = get_option( 'plugin_meteo_option_name' ); // Tableau de toutes les valeurs
-  $api_key_0 = $plugin_meteo_options['api_key_0']; // api-key
-  $city_id_1 = $plugin_meteo_options['city_id_1']; // city-id
-  $widget_type_2 = $plugin_meteo_options['widget_type_2']; // widget-type
- 
+function form()
+{
+
 ?>
-<div id="openweathermap-widget-<?=$widget_type_2?>" style="margin-left:10%;"></div>
-<script src='//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/d3.min.js'></script><script>window.myWidgetParam ? window.myWidgetParam : window.myWidgetParam = [];  window.myWidgetParam.push({id: <?=$widget_type_2?>,cityid: '<?= $city_id_1 ?>',appid: '<?=$api_key_0?>',units: 'metric',containerid: 'openweathermap-widget-<?=$widget_type_2?>',  });  (function() {var script = document.createElement('script');script.async = true;script.charset = "utf-8";script.src = "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js";var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(script, s);  })();</script>
-<script>window.myWidgetParam ? window.myWidgetParam : window.myWidgetParam = [];  window.myWidgetParam.push({id: <?=$widget_type_2?>,cityid: '<?= $city_id_1 ?>',appid: '<?=$api_key_0?>',units: 'metric',containerid: 'openweathermap-widget-<?=$widget_type_2?>',  });  (function() {var script = document.createElement('script');script.async = true;script.charset = "utf-8";script.src = "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js";var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(script, s);  })();</script>
+	<h1>Bonjour,</h1>
+	<form action="options.php" method="POST">
+		<?php
+		do_settings_sections('settings_page');
+		settings_fields('setting');
+		submit_button();
+		?>
+	</form>
+	<p>Voici le shortcode : [widget_meteo]</p>
+	<?php
+	echo create_shortcode();
+}
+add_action('admin_init', 'setting');
+
+function setting()
+{
+	/**
+	 * Registers a single setting
+	 */
+	register_setting(
+		'setting',     // Settings group.
+		'groupInput',     // Setting name
+		'sanitize'  // Sanitize callback.
+	);
+
+	add_settings_section(
+		'section',                   // Section ID
+		'Bienvenue sur votre plugin de météo.',  // Title
+		'section_markup',            // Callback or empty string
+		'settings_page'              // Page to display the section in.
+	);
+	add_settings_field(
+		'text_field',                   // Field ID
+		'Entrez votre clé API',  // Title
+		'apiKey',            // Callback to display the field
+		'settings_page',                // Page
+		'section'                      // Section
+	);
+	add_settings_field(
+		'city',                   // Field ID
+		'Entrez l\'id de la ville',  // Title
+		'city',            // Callback to display the field
+		'settings_page',                // Page
+		'section'                      // Section
+	);
+	add_settings_field(
+		'widget',                   // Field ID
+		'Choisissez votre widget',  // Title
+		'widget',            // Callback to display the field
+		'settings_page',                // Page
+		'section'                      // Section
+	);
+	/**
+	 * Displays our setting field
+	 * 
+	 * @param  array  $args  Arguments passed to corresponding add_settings_field() call
+	 */
+	function apiKey()
+	{
+		$group = get_option('groupInput');
+		$key = $group['apiKey'];
+		$value   = $key ?: '';
+	?>
+		<input id="apiKey" class="apiKey" type="text" name="groupInput[apiKey]" value="<?php echo esc_attr($value); ?>">
+	<?php
+	}
+	function city()
+	{
+		$group = get_option('groupInput');
+		$city = $group['city'];
+		$value   = $city ?: '';
+	?>
+		<input id="city" class="city" type="text" name="groupInput[city]" value="<?php echo esc_attr($value); ?>">
+	<?php
+	}
+	function widget()
+	{
+		$group = get_option('groupInput');
+		$id_widget = $group['id_widget'];
+		$value   = $id_widget ?: '';
+		for($i = 11; $i <= 19; $i++){
+	?>
+<label>
+	<input <?= ($i == $value) ? 'checked' : ''  ?> type="radio" id="id_widget" name="groupInput[id_widget]" value="<?= $i ?>">
+	<img src="/htdocs/wp-content/plugins/meteo/img/weather-<?= $i ?>.PNG">
+	</label>
+<?php
+		}
+	}
+	/**
+	 * Displays the content of the section
+	 * 
+	 * @param  array  $args  Arguments passed to the add_settings_section() function call
+	 */
+	function section_markup(){}
+}
+function sanitize($inputs)
+{
+	$input = [];
+	if (isset($inputs['apiKey'])) {
+		$key = $inputs['apiKey'];
+		$input['apiKey'] = $key;
+	} else {
+		$input['apiKey'] = get_option('groupInput["apiKey"]');
+	};
+
+	if (isset($inputs['id_widget'])) {
+		$id_widget = $inputs['id_widget'];
+		$input['id_widget'] = $id_widget;
+	} else {
+		$input['id_widget'] = get_option('groupInput["id_widget"]');
+	};
+
+	if (isset($inputs['city'])) {
+		$city = $inputs['city'];
+		$input['city'] = $city;
+	} else {
+		$input['city'] = get_option('groupInput["city"]');
+	};
+
+	return $input;
+}
+
+function create_shortcode()
+{
+	$group = get_option('groupInput');
+	$key = $group['id_widget'];
+	switch ($key) {
+		case 11:
+			$div = '<div id="openweathermap-widget-11"></div>';
+			function script_11()
+			{
+				wp_enqueue_script('script', 'https://openweathermap.org/themes/openweathermap/assets/vendor/owm/js/d3.min.js', '1.0.0', true);
+			}
+			add_action('wp_enqueue_scripts', 'script_11');
+			break;
+		case 12:
+			$div = '<div id="openweathermap-widget-12"></div>';
+			break;
+		case 13:
+			$div = '<div id="openweathermap-widget-13"></div>';
+			break;
+		case 14:
+			$div = '<div id="openweathermap-widget-14"></div>';
+			break;
+		case 16:
+			$div = '<div id="openweathermap-widget-16"></div>';
+			break;
+		case 17:
+			$div = '<div id="openweathermap-widget-17"></div>';
+			break;
+		case 18:
+			$div = '<div id="openweathermap-widget-18"></div>';
+			break;
+		case 19:
+			$div = '<div id="openweathermap-widget-19"></div>';
+			break;
+		default:
+			$div = '<div id="openweathermap-widget-15"></div>';
+			break;
+	}
+
+	return $div;
+}
+add_shortcode('widget_meteo', 'create_shortcode');
+
+function script()
+{
+	wp_enqueue_script('script', plugins_url('script.js', __FILE__), '1.0.0', true);
+	$group = get_option('groupInput');
+	$key = $group['apiKey'];
+	$id_city = $group['city'];
+	$id_widget = $group['id_widget'];
+	$values = [
+		'key' => $key,
+		'city' => $id_city,
+		'id_widget' => $id_widget
+	];
+	wp_localize_script('script', 'values', $values);
+}
+add_action('wp_enqueue_scripts', 'script');
+add_action('admin_enqueue_scripts', 'script');
 
 
